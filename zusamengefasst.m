@@ -1,25 +1,31 @@
 % ___________Define variables
+# number of dimention
+n   = 3;
 
-n = 3;
+# define Q= R^(-1), ljapunov gebiet
+Q       = sdpvar(n,n);        # Q = R^(-1)
+# a_head: closed loop controled coefficients
+# a_head  = sdpvar(n,1); #(a_head is the result!!!)
+z       = sdpvar(n,1); 
 
-# x
-x = sdpvar(n,1);
+# x: input matrix (could be e.g. initial position, velocity, ect.), right?
+x       = sdpvar(n,1);
 
-# b: input vector
-b = [0; 0;  1];
+# b: input vector, what does it means?
+b   = [0; 0;  1];
 
 # I: I of n dimension
-I = eye(n);
-# M = diag(0,1 ..., n-1) 
-M =  diag(1: n-1);
+I   = eye(n);
 
 # N = diag(-n,..., -2,-1)
-N = diag(-n:-1);
+N   = diag(-n:-1);
 
-% define Q
-Q = sdpvar(n,n);                
+# M = diag(0,1 ..., n-1); 
+M   =  diag(0: n-1);
 
-# A uncontrolled matrix system
+            
+
+# A current system
 A = [0 ,  1,  0;
       0,  0,  1;
       0,  0,  -0.005];
@@ -27,20 +33,18 @@ A = [0 ,  1,  0;
 # u_max
 u_max = 2.5 * 10^(-5)
 
-# m: size of a_head
+# m: size of a: dimention of A (nxn) ????
 m = 3;
 
-# a
-a = sdpvar(n,1);
-#a = [4.4469*10^-8;  2.3073*10^-5; 4.9148*10^-3];
-
-# a_head: closed loop controled coefficients
-a_head = [4.4469*10^-8;  2.3073*10^-5; 4.9148*10^-3];
+# a, A-lamda*I = 0; lamda = (a0, a1, ..., an). If we repleace A(current system)
+# by A* (system we want), we have a* as a result wanted eigen vector
+a = [40000; -200; 1];     #I calculate from A, is that ok?
 
 # a: route coefficients
 
-# z
-z = Q*a_head;
+
+# z = Q*a_head;                                         #(a_head is the result!!!)
+# z is propably is sth related to result, what is z means?
 
 % ___________Define constraints
 % 4.59
@@ -53,7 +57,7 @@ F = [F, Q*((A.') + a*(b.')) + (A+b*(a.'))*Q - z*(b.') - b*(z.') < 0];
 F = [F, Q*N + N*Q < 0];
 
 % 4.62
-F = [F, [1, (x.'); x, Q] >0];
+F = [F, [[1, (x.')]; [x, Q]] > 0];
 
 % 4.63
 #disp(size(u_max^2 -(a.')*Q*a + 2 .* (a.')*z));
@@ -65,11 +69,14 @@ F = [F, [1, (x.'); x, Q] >0];
 F = [F,  [[(u_max^2 -(a.')*Q*a + 2 * (a.')*z), (z.')]; [ z, Q]] >=0];
 % 4.64
 # i: belong to {0,1, ..., m}
+tmp = 0;
 for i = 0 : m
-  F = [F, sum(i) >= 0];
+  tmp = tmp + sum(i,Q,a, I, M);
 end
 
-function retval = P (l,k)
+F = [F, tmp >= 0];
+
+function retval = P (l, k, I, M)
   retval = 1;
   for q = (0: k-1)
     retval = retval * ((l-q)*I + M);
@@ -77,16 +84,17 @@ function retval = P (l,k)
   return
 endfunction
 
-function retval = sum(i)
+function retval = sum(i,Q,a, I, M)
   retval = 1;
   for k = (0: i)
-    retval = retval + nchoosek(i,k)*(a.')*P(0, i-k)*Q*N*P(0,k)*a-(z.')*N*P(n,i)*a;
+    retval = retval + nchoosek(i,k)*(a.')*P(0, i-k, I, M)*Q*N*P(0,k, I, M)*a
+                    -(z.')*N*P(n,i, I, M)*a;
   endfor
   return
 endfunction
 
 % ___________Define an objective
-objective = x;
+objective = 0;
 
 % ___________optimize
 optimize(F,objective)
