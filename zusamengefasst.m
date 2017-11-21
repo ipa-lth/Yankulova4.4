@@ -104,22 +104,21 @@ F = [F,  [[(u_max^2 -(a.')*Q*a + 2 * (a.')*z), (z.')]; [ z, Q]] >=0];
 % 4.64
 # i: belong to {0,1, ..., m}
 tmp = 0;
-disp ("Q = ");
-disp(Q);
-disp ("a = ");
-disp(a);
-disp ("I = ");
-disp(I);
-disp ("M = ");
-disp(M);
-disp ("N = ");
-disp(N);
+#disp ("Q = ");
+#disp(Q);
+#disp ("a = ");
+#disp(a);
+#disp ("I = ");
+#disp(I);
+#disp ("M = ");
+#disp(M);
+#disp ("N = ");
+#disp(N);
 
 # m: size of a: dimention of A (nxn) ????
 m = 3;
 for i = 0 : m
-  disp ("Looping...");
-  tmp = tmp + sum_func(i, Q, a, I, M, N);
+  tmp = tmp + sum_func(i, Q, a, I, M, N, n, z);
 end
 
 F = [F, tmp >= 0];
@@ -129,3 +128,4 @@ objective = 0;
 
 % ___________optimize
 optimize(F,objective)
+Pfeasible = value(Q);

@@ -1,12 +1,10 @@
-function retval = sum_func(i, Q, a, I, M, N)  
-  disp ("painkiller beginning: ");
+function retval = sum_func(i, Q, a, I, M, N, n, z)  
+  disp ("Running sum_func...");
   retval = 1;
-  M_M = M;
   for k = (0: i)
-    #retval = retval + nchoosek(i,k)*P_func(0, i-k, I, M_M)*P_func(0,k, I, M_M)*(a.')*Q*N*a
-    #                -P_func(n,i, I, M_M)*(z.')*N*a;
-    retval = retval + 1;
+    retval = retval  + nchoosek(i,k)*(a.')*P_func(0, i-k, I, M)*Q*N*P_func(0,k, I, M)*a
+                    - (z.')*N*P_func(n,i, I, M)*a;
   endfor
-  disp ("painkiller: ");
-  disp (retval);  
+  #disp ("sum_func: ");
+  #disp (retval);  
 endfunction
