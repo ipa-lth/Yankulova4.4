@@ -123,9 +123,19 @@ end
 
 F = [F, tmp >= 0];
 
+# 4.5.2
+# Beta = sdpvar(1);
+# F = [F, Q*(A.' + a*b.') + (A +b*a.')*Q - z*b.' -b*z.' + 2*Beta*Q < 0];
+
 % ___________Define an objective
-objective = 0;
+# 4.5.1
+objective = -det(Q)**(1/n);
+# objective = -geomean(Q);
+
+# 4.5.1
+# objective = -Beta;
 
 % ___________optimize
 optimize(F,objective)
 Pfeasible = value(Q);
+check(F)
