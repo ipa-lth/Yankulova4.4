@@ -1,4 +1,4 @@
-# loading path
+i# loading path
 addpath ("/home/ipa325/Downloads/YALMIP-master")
 addpath ("/home/ipa325/Downloads/YALMIP-master/extras")
 addpath ("/home/ipa325/Downloads/YALMIP-master/solvers")
@@ -8,6 +8,10 @@ addpath ("/home/ipa325/Downloads/YALMIP-master/modules/global")
 addpath ("/home/ipa325/Downloads/YALMIP-master/modules")
 addpath ("/home/ipa325/Downloads/YALMIP-master/modules/sos")
 addpath ("/home/ipa325/Downloads/YALMIP-master/operators")
+%cd /home/ipa325/Downloads/sdpt3-master
+%install_sdpt3.m
+pkg load signal
+pkg load control
 
 
 # final aim is to find the Q and z. A, b should be in canonical form 
@@ -24,14 +28,15 @@ z       = sdpvar(n,1);
 #z       = [1; 1; 1]; 
 
 # x: one line of Xi_o: initial state of the system
-Xi_o    = [ 10,  0.05, 0.0046;
-            10,  0.05, -0.0046;
-            10,  -0.05, 0.0046;
-            10,  -0.05, -0.0046;
-            -10,  0.05, 0.0046;
-            -10,  0.05, -0.0046;
-            -10,  -0.05, 0.0046;
-            -10,  -0.05, -0.0046;
+
+Xi_o    = [ 20,  10, 10;
+            20,  10, -10;
+            20,  -10, 10;
+            20,  -10, -10;
+            -20,  10, 10;
+            -20,  10, -10;
+            -20,  -10, 10;
+            -20,  -10, -10;
             ]
             
 x       = Xi_o(1,:).';
@@ -40,9 +45,6 @@ disp(x);
 disp("Xi_o NoR = ");
 Xi_o_num = size (Xi_o, 1);
 disp(Xi_o_num);
-
-# b: input vector, what does it means?
-b   = [0; 0;  1];
 
 # I: I of n dimension
 I   = eye(n);
@@ -56,10 +58,21 @@ M   =  diag(0: n-1);
             
 
 # A: current system matrix in canonical form ("Steuerung normal form")
-A = [0 ,  1,  0;
-      0,  0,  1;
-      0,  0,  -0.005];
-      
+A1 = [ 0 ,   1,       0;
+        -10,  -1.167,  25;
+        0,    0,       -0.8];
+ # b: input vector, what does it means?
+b1  =   [0; 0; 2.4];
+
+c1 = [1; 0; 0];     
+
+% [num, den]   = ss2tf(A1, b1, c1, 0);
+% [A,b,c,d]    = tf2ss(num,den);
+[A,b,c,d,Ti,Qi] = get_Steuerungsnormalform(A1, b1, c1, 0);
+%A = A1;
+%b = b1;
+%c = c1;
+%d = 0;
 # a is the last line of canonical form of A
 A_nol = size(A,1);      # number of line of A
 disp ("a = ");
@@ -67,7 +80,7 @@ a = A (A_nol,:).';     #I calculate from A, is that ok? => sure, a = last line o
 disp (a);
       
 # u_max
-u_max = 2.5 * 10^(-5)
+u_max = 10.5
 
 # a: route coefficients
 
@@ -129,8 +142,8 @@ F = [F, tmp >= 0];
 
 % ___________Define an objective
 # 4.5.1
-# objective = -logdet(Q);
-objective = -geomean(Q);
+objective = -logdet(Q);
+# objective = -geomean(Q);
 
 # sedumi setting
 # S = sdpsettings('solver', 'sedumi');
@@ -141,8 +154,14 @@ objective = -geomean(Q);
 # objective = -Beta;
 
 % ___________optimize
-optimize(F,objective, sdpsettings('solver', 'sedumi'))
-#[sol,diagnostics,aux,Valuefunction,Optimizer] = solvemp(F,objective,[],Q,z);
+optimize(F,objective, sdpsettings('solver', 'SDPT3'))
+# diagnostics = bisection(F,objective, sdpsettings('solver','bisection','bisection.solver','mosek'))
 
-Pfeasible = value(Q);
-check(F)
+Q_value = value(Q);
+R1  = Q_value^-1;
+z_value = value(z);
+
+disp ("R1 = ");
+disp(R1);
+disp ("z = ");
+disp(z_value);
