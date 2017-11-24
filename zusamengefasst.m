@@ -129,13 +129,20 @@ F = [F, tmp >= 0];
 
 % ___________Define an objective
 # 4.5.1
-objective = -det(Q)**(1/n);
-# objective = -geomean(Q);
+# objective = -logdet(Q);
+objective = -geomean(Q);
 
-# 4.5.1
+# sedumi setting
+# S = sdpsettings('solver', 'sedumi');
+# S = sdpsettings('solver', 'SDPT3');
+
+
+# 4.5.2
 # objective = -Beta;
 
 % ___________optimize
-optimize(F,objective)
+optimize(F,objective, sdpsettings('solver', 'SDPT3'))
+#[sol,diagnostics,aux,Valuefunction,Optimizer] = solvemp(F,objective,[],Q,z);
+
 Pfeasible = value(Q);
 check(F)
