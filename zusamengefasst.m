@@ -141,7 +141,7 @@ objective = -geomean(Q);
 # objective = -Beta;
 
 % ___________optimize
-optimize(F,objective, sdpsettings('solver', 'SDPT3'))
+optimize(F,objective, sdpsettings('solver', 'sedumi'))
 #[sol,diagnostics,aux,Valuefunction,Optimizer] = solvemp(F,objective,[],Q,z);
 
 Pfeasible = value(Q);
