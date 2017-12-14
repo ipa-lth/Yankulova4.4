@@ -1,0 +1,39 @@
+Installation Guide:
+
+1. Octave on Ubuntu 16.04 LTS:
+
+sudo apt-get install octave octave-doc gnuplot 
+
+2. YALMIP on octave:
+
++ Download latest YALMIP: https://yalmip.github.io/download/
++ extract file
++ add the following line in octave Command Window:
+
+addpath ("/location/YALMIP-master")
+addpath ("/location/YALMIP-master/extras")
+addpath ("/location/YALMIP-master/solvers")
+addpath ("/location/YALMIP-master/modules")
+addpath ("/location/YALMIP-master/modules/parametric")
+addpath ("/location/YALMIP-master/modules/global")
+addpath ("/location/YALMIP-master/modules")
+addpath ("/location/YALMIP-master/operators")
+
+location 	= position where the YALMIP-master is extracted
+e.g. location 	= home/ipa325/Downloads
+
+3. SDPT3 on Octave:
+
++ Download SDPT3 package: https://github.com/SQLP/SDPT3
++ running the file install_spdt3.m in Octave Command Window
+
+4. SeDuMi on Octave:
+
++ Download SeDuMi package: https://github.com/SQLP/SDPT3
++  running the file install_sedumi.m in Octave Command Window
+
+NOTICE:
++ before installing SDPT3, install firstly liboctave-dev 
++ while installing solver, the error appears: "f77blas.h not found", you ahve to:
+++ install libopenblas-dev
+++ replace blksdp.h <openblas/f77blas.h>
