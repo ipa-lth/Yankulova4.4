@@ -122,7 +122,7 @@ disp(M);
 disp ("N = ");
 disp(N);
 
-# m: size of a: dimention of A (nxn) ????
+# m: size of a: dimention of A (nxn) ????. page 50: m <= 2*n -1
 m = 5;
 tmp = 0;
 for i = 0 : m
@@ -130,19 +130,76 @@ for i = 0 : m
   F = [F, tmp >= 0];
 end
 
-%===========================4.5.2: Bisection
-F_preserved = F;
-Beta_lower = 0.1;                   % this is supposed to be feasible. However, problem is I can't find the feasible Beta
-Beta_upper = Beta_lower * 2;        % make sure Beta_lower > 0
-Beta_work  = Beta_lower; 
-%Beta = 100;
-F = [F_preserved, Q*(A.' + a*b.') + (A +b*a.')*Q - z*b.' -b*z.' + 2*Beta_upper*Q < 0];
-sol = optimize(F,[], sdpsettings('solver', 'SDPT3'))
-while (sol.problem==0)
-    Beta_upper = Beta_upper * 2;
-    F = [F_preserved, Q*(A.' + a*b.') + (A +b*a.')*Q - z*b.' -b*z.' + 2*Beta_upper*Q < 0];
-    sol = optimize(F,[], sdpsettings('solver', 'SDPT3'))
+%===========================4.65
+% we have to cast the matrix to double
+% reason: https://savannah.gnu.org/bugs/index.php?49267 
+a_i = zeros(n);
+for i = 1: n
+  if i <= (m-1)/2
+    a_i(i) = 0;
+    for k = (1: i)
+      a_i(i) = a_i(i) + (a.')*double(H_of_k_func(n+k-i, n))*double(Q)*double(N)*double(H_of_k_func(n-k+1,n))*a-double((z.'))*double(N)*double(H_of_k_func(n-i,n))*a;
+    endfor
+  elseif i < m+1
+    a_i(i) = 0;
+    for k = (1: 2*n-i)
+      a_i(i) = a_i(i) + (a.')*double(H_of_k_func(k,n))*double(Q)*double(N)*double(H_of_k_func(2*n-i-k+1,n))*a;
+    endfor 
+  else
+    a_i(i) = 0;
+  end
 end
+
+a_j_tilde = zeros(n);
+epsilon = 0.5;  % THIS is just an random epsilon in (0,1). WHAT is acatual value of epsilon?
+for j = (1: n)
+  a_j_tilde(j) = 0;
+  for i = (j: m)
+    a_j_tilde(j) = a_j_tilde(j) + nchoosek(i,i-j)*((1+epsilon)/(1-epsilon))**(i-j) * ((1 - epsilon)/2)**(i)*a_i(i);    
+  endfor
+endfor
+
+theta_sigma = zeros(m+1, m+1);
+i = 1;
+while (i <= m)
+  theta_sigma(i,i)    = 2*a_j_tilde(i);
+  theta_sigma(i+1,i)  = a_j_tilde(i+1);
+  theta_sigma(i,i+1)  = a_j_tilde(i+1);
+  i = i+2;
+endwhile
+theta_sigma = (-1/2) * theta_sigma;
+k = round(m/2) + 1;
+for l = (1: n)
+  J = [zeros(l*(k-1),l), eye(l*(k-1))];
+  C = [eye(l*(k-1)), zeros(l*(k-1),l)];
+  S = sdpvar(l*(k-1),l*(k-1)); 
+  G = sdpvar(l*(k-1),l*(k-1)); 
+%  G = sdpvar(l*(k-1),n*(k-1)); 
+  F = [F, S == (S.')];
+  F = [F, G + (G.') == 0];
+  disp ("theta_sigma = ");
+  disp(size(theta_sigma));
+   disp ("([C; J].')* [-S , G; (G.'), S]*[C; J] = ");
+  disp(size(([C; J].')* [-S , G; (G.'), S]*[C; J]));
+  F = [F, theta_sigma <= ([C; J].')* [-S , G; (G.'), S]*[C; J]];
+endfor
+
+
+
+
+%===========================4.5.2: Bisection
+%F_preserved = F;
+%Beta_lower = 0.1;                   % this is supposed to be feasible. However, problem is I can't find the feasible Beta
+%Beta_upper = Beta_lower * 2;        % make sure Beta_lower > 0
+%Beta_work  = Beta_lower; 
+%%Beta = 100;
+%F = [F_preserved, Q*(A.' + a*b.') + (A +b*a.')*Q - z*b.' -b*z.' + 2*Beta_upper*Q < 0];
+%sol = optimize(F,[], sdpsettings('solver', 'SDPT3'))
+%while (sol.problem==0)
+%    Beta_upper = Beta_upper * 2;
+%    F = [F_preserved, Q*(A.' + a*b.') + (A +b*a.')*Q - z*b.' -b*z.' + 2*Beta_upper*Q < 0];
+%    sol = optimize(F,[], sdpsettings('solver', 'SDPT3'))
+%end
 
 
 ################################
@@ -153,39 +210,38 @@ end
 
 #===========================4.5.1
 %objective = -logdet(Q);
-%objective = -geomean(Q);
+objective = -geomean(Q);
 
 ################################
 #
 # Optimize
 #
 ################################
-%sol = optimize(F,objective, sdpsettings('solver', 'SDPT3'))
+sol = optimize(F,objective, sdpsettings('solver', 'SDPT3'))
 
 #===========================4.5.2
 
 
 
-% Bisection code for finding B_work, which is max
-tol = 0.01;
-%Beta_work  = Beta_lower; 
-while (Beta_upper - Beta_lower)>tol
-  Beta_test = (Beta_upper + Beta_lower)/2;
-  disp([Beta_lower Beta_upper Beta_test])
-  F = [F_preserved, Q*(A.' + a*b.') + (A +b*a.')*Q - z*b.' -b*z.' + 2*Beta_test*Q < 0];
-  sol = optimize(F,[], sdpsettings('solver', 'SDPT3'))
-  if sol.problem==1
-    Beta_upper = Beta_test;
-  elseif sol.problem==0
-    Beta_lower = Beta_test;
-    Beta_work = Beta_test;
-  else
-    display('Something else happens!!!')
-    break
- end
-end
+%% Bisection code for finding B_work, which is max
+%tol = 0.01;
+%%Beta_work  = Beta_lower; 
+%while (Beta_upper - Beta_lower)>tol
+%  Beta_test = (Beta_upper + Beta_lower)/2;
+%  disp([Beta_lower Beta_upper Beta_test])
+%  F = [F_preserved, Q*(A.' + a*b.') + (A +b*a.')*Q - z*b.' -b*z.' + 2*Beta_test*Q < 0];
+%  sol = optimize(F,[], sdpsettings('solver', 'SDPT3'))
+%  if sol.problem==1
+%    Beta_upper = Beta_test;
+%  elseif sol.problem==0
+%    Beta_lower = Beta_test;
+%    Beta_work = Beta_test;
+%  else
+%    display('Something else happens!!!')
+%    break
+% end
+%end
 
-%diagnostics = bisection(F,objective, sdpsettings('solver','bisection','bisection.solver','mosek'))
 
 Q_value = value(Q);
 R1  = Q_value^-1;
