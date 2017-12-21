@@ -123,7 +123,7 @@ disp ("N = ");
 disp(N);
 
 # m: size of a: dimention of A (nxn) ????. page 50: m <= 2*n -1
-m = 5;
+m = n;  % Lorenz takes m = n , I take max (m) <= 2*n -1
 tmp = 0;
 for i = 0 : m
   tmp = tmp + sum_func(i, Q, a, I, M, N, n, z);
@@ -152,38 +152,54 @@ end
 
 a_j_tilde = zeros(n);
 epsilon = 0.5;  % THIS is just an random epsilon in (0,1). WHAT is acatual value of epsilon?
-for j = (1: n)
+for j = (1: m)
   a_j_tilde(j) = 0;
   for i = (j: m)
     a_j_tilde(j) = a_j_tilde(j) + nchoosek(i,i-j)*((1+epsilon)/(1-epsilon))**(i-j) * ((1 - epsilon)/2)**(i)*a_i(i);    
   endfor
 endfor
 
-theta_sigma = zeros(m+1, m+1);
-i = 1;
-while (i <= m)
-  theta_sigma(i,i)    = 2*a_j_tilde(i);
-  theta_sigma(i+1,i)  = a_j_tilde(i+1);
-  theta_sigma(i,i+1)  = a_j_tilde(i+1);
-  i = i+2;
-endwhile
-theta_sigma = (-1/2) * theta_sigma;
-k = round(m/2) + 1;
-for l = (1: n)
-  J = [zeros(l*(k-1),l), eye(l*(k-1))];
-  C = [eye(l*(k-1)), zeros(l*(k-1),l)];
-  S = sdpvar(l*(k-1),l*(k-1)); 
-  G = sdpvar(l*(k-1),l*(k-1)); 
-%  G = sdpvar(l*(k-1),n*(k-1)); 
-  F = [F, S == (S.')];
-  F = [F, G + (G.') == 0];
-  disp ("theta_sigma = ");
-  disp(size(theta_sigma));
-   disp ("([C; J].')* [-S , G; (G.'), S]*[C; J] = ");
-  disp(size(([C; J].')* [-S , G; (G.'), S]*[C; J]));
-  F = [F, theta_sigma <= ([C; J].')* [-S , G; (G.'), S]*[C; J]];
-endfor
+%theta_sigma = zeros(m+1, m+1);
+%i = 1;
+%while (i <= m)
+%  theta_sigma(i,i)    = 2*a_j_tilde(i);
+%  theta_sigma(i+1,i)  = a_j_tilde(i+1);
+%  theta_sigma(i,i+1)  = a_j_tilde(i+1);
+%  i = i+2;
+%endwhile
+%theta_sigma = (-1/2) * theta_sigma;
+theta_sigma = calcThetaSigma(a_j_tilde);
 
+k = round(m/2) + 1;
+
+%for l = (1: n)
+%  J = [zeros(l*(k-1),l), eye(l*(k-1))];
+%  C = [eye(l*(k-1)), zeros(l*(k-1),l)];
+%  S = sdpvar(l*(k-1),l*(k-1)); 
+%  G = sdpvar(l*(k-1),l*(k-1)); 
+%%  G = sdpvar(l*(k-1),n*(k-1)); 
+%  F = [F, S == (S.')];
+%  F = [F, G + (G.') == 0];
+%  disp ("theta_sigma = ");
+%  disp(size(theta_sigma));
+%   disp ("([C; J].')* [-S , G; (G.'), S]*[C; J] = ");
+%  disp(size(([C; J].')* [-S , G; (G.'), S]*[C; J]));
+%  F = [F, theta_sigma <= ([C; J].')* [-S , G; (G.'), S]*[C; J]];
+%endfor
+
+l = 1; % suppose l = n
+J = [zeros(l*(k-1),l), eye(l*(k-1))];
+C = [eye(l*(k-1)), zeros(l*(k-1),l)];
+S = sdpvar(l*(k-1),l*(k-1)); 
+G = sdpvar(l*(k-1),l*(k-1)); 
+%  G = sdpvar(l*(k-1),n*(k-1)); 
+F = [F, S == (S.')];
+F = [F, G + (G.') == 0];
+disp ("theta_sigma = ");
+disp(size(theta_sigma));
+ disp ("([C; J].')* [-S , G; (G.'), S]*[C; J] = ");
+disp(size(([C; J].')* [-S , G; (G.'), S]*[C; J]));
+F = [F, theta_sigma <= ([C; J].')* [-S , G; (G.'), S]*[C; J]];
 
 
 
@@ -246,6 +262,12 @@ sol = optimize(F,objective, sdpsettings('solver', 'SDPT3'))
 Q_value = value(Q);
 R1  = Q_value^-1;
 z_value = value(z);
+
+if sol.problem==0
+  display('Feasible');
+else
+  display('Infeasible');
+end
 
 disp ("Q = ");
 disp(Q_value);
