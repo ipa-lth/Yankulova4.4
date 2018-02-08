@@ -14,7 +14,7 @@ M = [0, 0; 0, 1];
 
 z = [1; 1];
 
-tmp = sum_func(i, Q, a, I, M, N, n, z);
+tmp = func_constraint464(i, Q, a, M, N, n, z);
 disp(tmp);
 if (tmp == 9)
   disp("RIGHT calculated!")

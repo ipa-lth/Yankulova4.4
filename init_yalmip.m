@@ -1,0 +1,7 @@
+addpath ("~/tools/YALMIP-master")
+addpath ("~/tools/YALMIP-master/extras")
+addpath ("~/tools/YALMIP-master/solvers")
+addpath ("~/tools/YALMIP-master/modules")
+addpath ("~/tools/YALMIP-master/modules/parametric")
+addpath ("~/tools/YALMIP-master/modules/global")
+addpath ("~/tools/YALMIP-master/operators")
