@@ -54,14 +54,16 @@ end
 ###########################################
 
 %objective = -logdet(Q);
-objective = -geomean(Q);
+%objective = -geomean(Q);
+objective = [];
 
 
 ###########################################
 # Solve/Optimize                          #
 ###########################################
-sol = optimize(constraints_451, objective)
+sol = optimize(constraints_451, objective, sdpsettings('solver','sdpt3'))
 
+display("Objective variant (4.5.1) -> Max. Volume: FEASIBILITY ONLY");
 disp("Status:")
 disp(sol.info)
 if sol.problem==0
@@ -76,3 +78,43 @@ a_hat_451 = R1_451 * value(z)
 
 disp("z = ")
 disp(value(z))
+
+
+###########################################
+# Objective variant (4.70)                #
+# Max. Abklingrate                        #
+###########################################
+
+# Bisection parameter
+#beta = cvxpy.Parameter(sign='positive') 
+sdpvar t;
+
+constraints_452 = [Q >= 0]; # 4.59
+
+constraints_452 = [constraints_452,
+                   Q*(A' + a*b') + (A + b*a')*Q - z*b' - b*z' + 2*t*Q <= 0]; #4.71
+
+                   
+constraints_452 = [constraints_452, 
+                   Q*N + N*Q <= 0]; # 4.61
+
+for i = 1: X0
+  constraints_452 = [constraints_452,
+                    [[1,          X0(:,i)'];
+                     [X0(:,i),    Q       ]] > 0]; # 4.62
+end
+
+constraints_452 = [constraints_452,
+                  [[u_max^2-a'*Q*a + 2*a'*z, z']; # no blank at minus or it's like two cols...
+                   [z                      , Q ]] >=0]; # 4.63
+
+# 4.64
+m = n;
+for i = 0 : m
+  constraints_452 = [constraints_452,
+                     func_constraint464(i, Q, a, M, N, n, z) >= 0];
+end
+ 
+ops = sdpsettings('solver','bisection','bisection.solver','sedumi');
+Objective = -t; #Maximize
+diagnostics = optimize(constraints_452, Objective, ops)
