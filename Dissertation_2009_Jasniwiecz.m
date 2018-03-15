@@ -6,6 +6,11 @@ init_yalmip
 # loading Fusions Reaktor
 init_fusion_reactor
 
+# select solver
+sol = 'sdpt3'
+#sol = 'sedumi'
+#sol = 'mosek'
+
 # Init values (may come from optimization loop)
 pmin = 1/20
 mu1 = 1.5
@@ -62,7 +67,7 @@ constraints_A15 = [constraints_A15,
                   Q*A + A'*Q - b*z1' - z1*b' + 2*t*Q<=0];
 
 
-ops = sdpsettings('solver','bisection','bisection.solver','sdpt3');
+ops = sdpsettings('solver','bisection','bisection.solver', sol);
 Objective = -t; #Maximize
 diagnostics = optimize(constraints_A15, Objective, ops);
 #test_it(value(Q), value(z0), value(z1), mu, value(t), A, b, X0)
@@ -124,7 +129,7 @@ constraints_A15 = [constraints_A15,
                   Q*A + A'*Q - b*z1' - z1*b' + 2*t*Q<=0];
 
 
-ops = sdpsettings('solver','bisection','bisection.solver','sdpt3');
+ops = sdpsettings('solver','bisection','bisection.solver', sol);
 Objective = -t; #Maximize
 diagnostics = optimize(constraints_A15, Objective, ops);
 #test_it(value(Q), value(z0), value(z1), mu, value(t), A, b, X0)
@@ -232,6 +237,6 @@ constraints_439 = [constraints_439,
 
 obj_439 = trace(R0+1.0/pm*R1); # objective
 
-diagnostics = optimize(constraints_439, obj_439, sdpsettings('solver', 'sdpt3'))
+diagnostics = optimize(constraints_439, obj_439, sdpsettings('solver', sol))
 
 disp("end")
