@@ -15,3 +15,5 @@ addpath ("~/tools/sdpt3/Solver")
 addpath ("~/tools/sdpt3/HSDSolver")
 addpath ("~/tools/sdpt3/Solver/Mexfun")
 addpath ("~/tools/sdpt3/Examples")
+
+pkg load control

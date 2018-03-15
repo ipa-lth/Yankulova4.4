@@ -1,4 +1,4 @@
-clear
+#clear
 
 # loading YALMIP
 init_yalmip
@@ -62,7 +62,7 @@ constraints_A15 = [constraints_A15,
                   Q*A + A'*Q - b*z1' - z1*b' + 2*t*Q<=0];
 
 
-ops = sdpsettings('solver','bisection','bisection.solver','sedumi');
+ops = sdpsettings('solver','bisection','bisection.solver','sdpt3');
 Objective = -t; #Maximize
 diagnostics = optimize(constraints_A15, Objective, ops);
 #test_it(value(Q), value(z0), value(z1), mu, value(t), A, b, X0)
@@ -72,7 +72,7 @@ disp("l*(mu=1)=")
 l1m0 = inv(value(Q))*value(z1)
 
 disp("lambda^{hat}(p=1)=")
-roots_m0_p1 = eig(A-b*l1m0')
+roots_m0_p1 = eig(A-b*l1m0')'
 
 
 
@@ -124,7 +124,7 @@ constraints_A15 = [constraints_A15,
                   Q*A + A'*Q - b*z1' - z1*b' + 2*t*Q<=0];
 
 
-ops = sdpsettings('solver','bisection','bisection.solver','sedumi');
+ops = sdpsettings('solver','bisection','bisection.solver','sdpt3');
 Objective = -t; #Maximize
 diagnostics = optimize(constraints_A15, Objective, ops);
 #test_it(value(Q), value(z0), value(z1), mu, value(t), A, b, X0)
@@ -134,7 +134,7 @@ disp("l*(mu=1)=")
 l1m1 = inv(value(Q))*value(z1)
 
 disp("lambda^{hat}(p=1)=")
-roots_m1_p1 = eig(A-b*l1m1')
+roots_m1_p1 = eig(A-b*l1m1')'
 
 disp("lambda^{hat}(p=pmin)=")
 roots_m0_pmin = zeta0 * real(roots_m0_p1) + 1i*imag(roots_m0_p1)
@@ -143,4 +143,12 @@ roots_m0_pmin = zeta0 * real(roots_m0_p1) + 1i*imag(roots_m0_p1)
 disp("lambda^{hat}_*(p=pmin)=")
 roots_m1_pmin = zeta1 * real(roots_m1_p1) + 1i*imag(roots_m1_p1)
 #roots_m1_pmin = zeta0 * roots_m1_p1  # Shifting on both real and imaginary axis in zeta
+
+[k0_0, k0_1] = k_explizit_Ab2(roots_m0_p1, roots_m0_pmin, pmin, A, b)
+figure;
+plot_moving_poles(A, b, c, d, k0_0, k0_1, pmin)
+
+[k1_0, k1_1] = k_explizit_Ab2(roots_m1_p1, roots_m1_pmin, pmin, A, b)
+figure;
+plot_moving_poles(A, b, c, d, k1_0, k1_1, pmin)
 
