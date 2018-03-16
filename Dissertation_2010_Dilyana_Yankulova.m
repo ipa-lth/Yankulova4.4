@@ -26,10 +26,10 @@ constraints_451 = [constraints_451,
 constraints_451 = [constraints_451, 
                    Q*N + N*Q <= 0]; # 4.61
 
-for i = 1: X0
+for i = 1:size(X0,2)
   constraints_451 = [constraints_451,
                     [[1,          X0(:,i)'];
-                     [X0(:,i),    Q       ]] > 0]; # 4.62
+                     [X0(:,i),    Q       ]] >= 0]; # 4.62
 end
 
 constraints_451 = [constraints_451,
@@ -37,6 +37,7 @@ constraints_451 = [constraints_451,
                    [z                      , Q ]] >=0]; # 4.63
 
                    
+
 ###########################################
 # Constraint variant (4.64)               #
 ###########################################
@@ -53,24 +54,17 @@ end
 # Objective                               #
 ###########################################
 
-%objective = -logdet(Q);
-%objective = -geomean(Q);
+#objective = -logdet(Q);
+#objective = -geomean(Q);
 objective = [];
 
 
 ###########################################
 # Solve/Optimize                          #
 ###########################################
-sol = optimize(constraints_451, objective, sdpsettings('solver','sdpt3'))
+display("Objective variant (4.5.1) -> Max. Volume");
 
-display("Objective variant (4.5.1) -> Max. Volume: FEASIBILITY ONLY");
-disp("Status:")
-disp(sol.info)
-if sol.problem==0
-  display('Feasible');
-else
-  display('Infeasible');
-end
+diagnostics = optimize(constraints_451, objective, sdpsettings('solver', 'sdpt3'))
 
 Q_451     = value(Q)
 R1_451    = inv(Q_451)
@@ -98,10 +92,10 @@ constraints_452 = [constraints_452,
 constraints_452 = [constraints_452, 
                    Q*N + N*Q <= 0]; # 4.61
 
-for i = 1: X0
+for i = 1:size(X0,2)
   constraints_452 = [constraints_452,
                     [[1,          X0(:,i)'];
-                     [X0(:,i),    Q       ]] > 0]; # 4.62
+                     [X0(:,i),    Q       ]] >= 0]; # 4.62
 end
 
 constraints_452 = [constraints_452,
@@ -115,6 +109,6 @@ for i = 0 : m
                      func_constraint464(i, Q, a, M, N, n, z) >= 0];
 end
  
-ops = sdpsettings('solver','bisection','bisection.solver','sedumi');
+ops = sdpsettings('solver','bisection','bisection.solver','sdpt3');
 Objective = -t; #Maximize
 diagnostics = optimize(constraints_452, Objective, ops)

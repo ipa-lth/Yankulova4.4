@@ -40,33 +40,40 @@ constraints_439 = [R0 >= 0];
 
 constraints_439 = [constraints_439,
                   [R0 + R1 >= 0]];
-             
+            
 constraints_439 = [constraints_439,
                   [ [-D0,  G0;
                       G0', D0] - [T0_0 + 0.5*beta*T0_1 + 0.25*beta**2*T0_2, 0.25*alpha*(T0_1 + beta*T0_2);
                                   0.25*alpha*(T0_1 + beta*T0_2),            0.25*alpha**2*T0_2           ]] >= 0 
                   ];
 
+
 for i = 1:size(X0,2)
   constraints_439 = [constraints_439,
                     [1.0 - X0(:,i)'*(R0 + R1)*X0(:,i)] >= 0 ];
 end
 
+# Problematic constraint
 constraints_439 = [constraints_439,
                   [ [[1,    k0_0'];
                      [k0_0,    R0]] + 1.0/pm * [[0,    k0_1'];
                                                 [k0_1,    R1]]] >= 0 ]; 
 
-#constraint_439e_ = cvxpy.bmat([[1,               k0_0'+1.0/pm*k0_1'],
-#                              [k0_0+1.0/pm*k0_1,         R0+1.0/pm*R1]]) >> 0
 
+#constraint_439e_ = cvxpy.bmat([[1,               k1_0'+1.0/pm*k1_1'],
+#                              [k1_0+1.0/pm*k0_1,         R0+1.0/pm*R1]]) >> 0
+
+
+# Problematic constraint
 constraints_439 = [constraints_439,
                   [ [[1,    k0_0'];
                      [k0_0,    R0]] + [[0,    k0_1'];
                                        [k0_1,    R1]]] >= 0 ]; 
 
+
 #constraint_439f_ = cvxpy.bmat([[1,    k0_0'+k0_1'],
 #                              [k0_0+k0_1,     R0+R1]]) >> 0                                                
+ 
 
 constraints_439 = [constraints_439,
                   [ [-D1,  G1;
@@ -79,3 +86,4 @@ constraints_439 = [constraints_439,
 obj_439 = trace(R0+1.0/pm*R1); # objective
 
 diagnostics = optimize(constraints_439, obj_439, sdpsettings('solver', sol))
+#diagnostics = optimize(constraints_439, [], sdpsettings('solver', sol))
