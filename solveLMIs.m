@@ -94,7 +94,7 @@ for j1 = 0:(max(N_u, M_u) - min(0, L))
         R_f{j1+1} = R_f{j1+1} + [[0, zeros(1,n)]; [zeros(n,1), [R{j1-(M_l-L)+1}]]];
     end
     if (j1<=N_u-L) && (j1>=N_l-L)
-        R_f{j1+1} = R_f{j1+1} + [0, k{j1-(N_l-L)+1}'; k{j1-(N_l-L)+1}, zeros(n)];
+        R_f{j1+1} = R_f{j1+1} + [[0, k{j1-(N_l-L)+1}']; [k{j1-(N_l-L)+1}, zeros(n)]];
     end
 end
 R_f{-min(0, L)+1} = R_f{-min(0, L)+1} + [1, zeros(1,n); zeros(n,1), zeros(n)];
@@ -192,15 +192,15 @@ if m == 1
 elseif m == 2
     Q_sum = [[[2*Q_in{1}], [Q_in{2}]]; [[Q_in{2}], zeros(n)]]
 else
-    Q_sum = [2*Q_in{1}, Q_in{2}; Q_in{2}, 2*Q_in{3}];
+    Q_sum = [[[2*Q_in{1}], [Q_in{2}]]; [[Q_in{2}], [2*Q_in{3}]]];
 end
 for i1 = 4:2:m
     if i1 ~= m
-        Q_sum = [Q_sum, [zeros((i1/2-1)*n,n); Q_in{i1}]; ...
-            zeros(n,(i1/2-1)*n), Q_in{i1}, 2*Q_in{i1+1}]; %#ok<AGROW>
+        Q_sum = [[Q_sum, [zeros((i1/2-1)*n,n); Q_in{i1}]]; ...
+            [[zeros(n,(i1/2-1)*n), Q_in{i1}], [2*Q_in{i1+1}]]]; %#ok<AGROW>
     else % even number of elementary matrices --> zeros in southeasternmost position
-        Q_sum = [Q_sum, [zeros((i1/2-1)*n,n); Q_in{i1}]; ...
-            zeros(n,(i1/2-1)*n), Q_in{i1}, zeros(n)]; %#ok<AGROW>
+        Q_sum = [[Q_sum, [zeros((i1/2-1)*n,n); Q_in{i1}]]; ...
+            [[zeros(n,(i1/2-1)*n), Q_in{i1}], zeros(n)]]; %#ok<AGROW>
     end
 end
 Q_sum = 1/2*Q_sum;
