@@ -91,7 +91,7 @@ L = min(N_l, M_l);
 for j1 = 0:(max(N_u, M_u) - min(0, L))
     R_f{j1+1} = 0; %#ok<AGROW>
     if (j1<=M_u-L) && (j1>=M_l-L)
-        R_f{j1+1} = R_f{j1+1} + [0, zeros(1,n); zeros(n,1), R{j1-(M_l-L)+1}];
+        R_f{j1+1} = R_f{j1+1} + [[0, zeros(1,n)]; [zeros(n,1), [R{j1-(M_l-L)+1}]]];
     end
     if (j1<=N_u-L) && (j1>=N_l-L)
         R_f{j1+1} = R_f{j1+1} + [0, k{j1-(N_l-L)+1}'; k{j1-(N_l-L)+1}, zeros(n)];
@@ -113,7 +113,7 @@ ks_1 = ks{1};
 for i1 = 1:(-N_l+N_u)
     ks_1 = ks_1 + ks{i1};
 end
-LMIs = [LMIs, [[bet^2, ks_1'; ks_1, R_1] > 0]];
+LMIs = [LMIs, [[[bet^2, ks_1']; [ks_1, R_1]] > 0]];
 
 % condition g)
 % initial states constraint
@@ -190,7 +190,7 @@ n = size(Q_in{1},1);
 if m == 1
     Q_sum = [2*Q_in{1}, zeros(n); zeros(n), zeros(n)];
 elseif m == 2
-    Q_sum = [2*Q_in{1}, Q_in{2}; Q_in{2}, zeros(n)];
+    Q_sum = [[[2*Q_in{1}], [Q_in{2}]]; [[Q_in{2}], zeros(n)]]
 else
     Q_sum = [2*Q_in{1}, Q_in{2}; Q_in{2}, 2*Q_in{3}];
 end
