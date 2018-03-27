@@ -3,40 +3,47 @@
 ###############################
 
 # Define Variables
-R0 = sdpvar(n, n, 'full'); #semidef
-R1 = sdpvar(n, n, 'full');
+R0 = sdpvar(n, n, 'symmetric'); #semidef
+R1 = sdpvar(n, n, 'symmetric');
+
+#R0 = sdpvar(n, n); #semidef
+#R1 = sdpvar(n, n);
 
 G0 = sdpvar(n, n, 'skew'); # G -> skew
 G1 = sdpvar(n, n, 'skew'); # G_* -> skew
 
-D0 = sdpvar(n, n, 'sym'); # D -> sym
-D1 = sdpvar(n, n, 'sym'); # D_* -> sym
+D0 = sdpvar(n, n, 'symmetric'); # D -> sym
+D1 = sdpvar(n, n, 'symmetric'); # D_* -> sym
 
 # Define Parameters
+#safety factor?
+s = 1.001;
+
 pm = pmin;
 
 alpha = 1-pm;
-beta = 1+pm;
+beta =  1+pm;
 
 # TODO: Check if Â_0 and Â_1 are correct (find proof)
 A0_0 = A-b*k0_0';                                               # A^{hat}_0
-A0_1 = b*k0_1';                                                  # A^{hat}_0
-#A0_1 = A-b*k0_1'                                               # A^{hat}_1
+A0_1 =  -b*k0_1';                                               # A^{hat}_1
+#A0_1 = A-b*(k0_1'0k0_0');                                               # A^{hat}_1
 
-T0_0 = A0_1'*R1 + R1*A0_1;                                       # Theta_0
+T0_0 = A0_1'*R1 + R1*A0_1;                                      # Theta_0
 T0_1 = A0_0'*R1 + R1*A0_0 + A0_1'*R0 + R0*A0_1;                 # Theta_1
-T0_2 = A0_0'*R0 + R0*A0_0;                                       # Theta_2
+T0_2 = A0_0'*R0 + R0*A0_0;                                      # Theta_2
 
 # TODO: Check if Â_{*,0} and Â_{*,1} are correct (find proof)
-A1_0 = A-b*k1_0';                                                # A^{hat}_{*, 0}
-A1_1 = b*k1_1';                                                  # A^{hat}_{*, 0}
-#A1_1 = A-b*k1_1'                                               # A^{hat}_{*, 1}
+A1_0 = A-b*k1_0';                                               # A^{hat}_{*, 0}
+A1_1 =  -b*k1_1';                                               # A^{hat}_{*, 1}
+#A1_1 = A-b*(k1_1'0k1_0');                                               # A^{hat}_{*, 1}
 
 T1_0 = A1_1'*R1 + R1*A1_1;                                      # Theta_{*,0}
-T1_1 = A1_0'*R1 + R1*A1_0 + A1_1'*R0 + R0*A1_1;                # Theta_{*,1}
+T1_1 = A1_0'*R1 + R1*A1_0 + A1_1'*R0 + R0*A1_1;                 # Theta_{*,1}
 T1_2 = A1_0'*R0 + R0*A1_0;                                      # Theta_{*,2}
 
-constraints_439 = [R0 >= 0];
+constraints_439 = [D0 >= 0, D1 >= 0];
+#constraints_439 = [R0 >= 0];
 
 constraints_439 = [constraints_439,
                   [R0 + R1 >= 0]];
@@ -50,7 +57,7 @@ constraints_439 = [constraints_439,
 
 for i = 1:size(X0,2)
   constraints_439 = [constraints_439,
-                    [1.0 - X0(:,i)'*(R0 + R1)*X0(:,i)] >= 0 ];
+                    [1.0 - s*X0(:,i)'*(R0 + R1)*s*X0(:,i)] >= 0 ];
 end
 
 # Problematic constraint

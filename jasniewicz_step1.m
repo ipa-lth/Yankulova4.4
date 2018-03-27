@@ -15,6 +15,9 @@ z1 = sdpvar(n, 1);
 sdpvar t;
 
 mu = 1;
+
+#safety factor?
+s = 1.01;
 #mu = cvxpy.Parameter(sign='positive')
           
 # Define Constraints
@@ -23,8 +26,8 @@ constraints_A15 = [Q >= 0]; # Q is Semidefinite
 # (A.10)
 for i = 1:size(X0,2)
   constraints_A15 = [constraints_A15,
-                    [Q,       [X0(:,i)];
-                    [X0(:,i)',       1]] >= 0];
+                    [Q,         [s*X0(:,i)];
+                    [s*X0(:,i)',        1]] >= 0];
 end
 
 # (A.11)
@@ -77,6 +80,9 @@ z1 = sdpvar(n, 1);
 sdpvar t;
 
 mu = mu1;
+
+#safety factor?
+s = 1.01;
 #mu = cvxpy.Parameter(sign='positive')
           
 # Define Constraints
@@ -85,8 +91,8 @@ constraints_A15 = [Q >= 0]; # Q is Semidefinite
 # (A.10)
 for i = 1:size(X0,2)
   constraints_A15 = [constraints_A15,
-                    [Q,       [X0(:,i)];
-                    [X0(:,i)',       1]] >= 0];
+                    [Q,         [s*X0(:,i)];
+                    [s*X0(:,i)',        1]] >= 0];
 end
 
 # (A.11)
@@ -128,10 +134,10 @@ disp("lambda^{hat}_*(p=pmin)=")
 roots_m1_pmin = zeta1 * real(roots_m1_p1) + 1i*imag(roots_m1_p1)
 #roots_m1_pmin = zeta0 * roots_m1_p1  # Shifting on both real and imaginary axis in zeta
 
-[k0_0, k0_1] = k_explizit_Ab2(roots_m0_p1, roots_m0_pmin, pmin, A, b)
+[k0_0, k0_1] = k_explizit_Ab3(roots_m0_p1, roots_m0_pmin, pmin, A, b)
 figure;
 plot_moving_poles(A, b, c, d, k0_0, k0_1, pmin)
 
-[k1_0, k1_1] = k_explizit_Ab2(roots_m1_p1, roots_m1_pmin, pmin, A, b)
+[k1_0, k1_1] = k_explizit_Ab3(roots_m1_p1, roots_m1_pmin, pmin, A, b)
 figure;
 plot_moving_poles(A, b, c, d, k1_0, k1_1, pmin)
