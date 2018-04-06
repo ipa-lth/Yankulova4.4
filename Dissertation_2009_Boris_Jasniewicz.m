@@ -48,7 +48,8 @@ instruct.ks = {k1_1, k1_0};
 
 if sol.problem ~= 0 % numerical problems?
     f = realmax;%-1/res;%
+    disp(sol.info)
     return
 end
 
-disp("end")
+disp(sol.info)

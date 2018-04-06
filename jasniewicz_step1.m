@@ -49,8 +49,9 @@ constraints_A15 = [constraints_A15,
                   Q*A + A'*Q - b*z1' - z1*b' + 2*t*Q<=0];
 
 
-ops = sdpsettings('solver','bisection','bisection.solver', sol);
+ops = sdpsettings('solver','bisection','bisection.solver', sol, 'verbose', false);
 Objective = -t; #Maximize
+disp("Starting bisection mu=1")
 diagnostics = optimize(constraints_A15, Objective, ops);
 #test_it(value(Q), value(z0), value(z1), mu, value(t), A, b, X0)
 #check(constraints_A15)
@@ -114,8 +115,9 @@ constraints_A15 = [constraints_A15,
                   Q*A + A'*Q - b*z1' - z1*b' + 2*t*Q<=0];
 
 
-ops = sdpsettings('solver','bisection','bisection.solver', sol);
+ops = sdpsettings('solver','bisection','bisection.solver', sol, 'verbose', false);
 Objective = -t; #Maximize
+disp("Starting bisection mu>=1")
 diagnostics = optimize(constraints_A15, Objective, ops);
 #test_it(value(Q), value(z0), value(z1), mu, value(t), A, b, X0)
 #check(constraints_A15)

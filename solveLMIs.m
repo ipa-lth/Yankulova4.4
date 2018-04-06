@@ -113,12 +113,13 @@ ks_1 = ks{1};
 for i1 = 1:(-N_l+N_u)
     ks_1 = ks_1 + ks{i1};
 end
-LMIs = [LMIs, [[[bet^2, ks_1']; [ks_1, R_1]] > 0]];
+LMIs = [LMIs, [[[bet^2, ks_1']; [ks_1, R_1]] >= 0]];
+disp("WARNING:  -> Using <- beta constraint!")
 
 % condition g)
 % initial states constraint
 for i1 = 1:size(x0,2)
-    LMIs = [LMIs, [1 - x0(:,i1)'*R_1*x0(:,i1) > 0]];
+    LMIs = [LMIs, [1 - x0(:,i1)'*R_1*x0(:,i1) >= 0]];
 end
 
 % objective function
@@ -138,7 +139,7 @@ opts = sdpsettings('solver','sdpt3','sdpt3.gaptol',1e-5,'verbose',0, 'savesolver
 % opts = sdpsettings('solver','sedumi','sedumi.numtol',1e-7, 'savesolveroutput', 1);
 % opts = sdpsettings('solver','csdp', 'savesolveroutput', 1);
 % opts = sdpsettings('solver','dsdp','dsdp.gaptol',1e-7);
-sol = solvesdp(LMIs, h, opts);
+sol = optimize(LMIs, h, opts);
 for i1 = 0:(-M_l+M_u)
     R_sol{i1+1} = double(R{i1+1}); %#ok<AGROW>
 end
@@ -190,7 +191,7 @@ n = size(Q_in{1},1);
 if m == 1
     Q_sum = [2*Q_in{1}, zeros(n); zeros(n), zeros(n)];
 elseif m == 2
-    Q_sum = [[[2*Q_in{1}], [Q_in{2}]]; [[Q_in{2}], zeros(n)]]
+    Q_sum = [[[2*Q_in{1}], [Q_in{2}]]; [[Q_in{2}], zeros(n)]];
 else
     Q_sum = [[[2*Q_in{1}], [Q_in{2}]]; [[Q_in{2}], [2*Q_in{3}]]];
 end
@@ -219,7 +220,7 @@ J = [zeros(n*(k-1),n), eye(n*(k-1))];
 C = [eye(n*(k-1)), zeros(n*(k-1),n)];
 D = sdpvar(n*(k-1),n*(k-1),'symmetric');
 G = sdpvar(n*(k-1),n*(k-1),'skew');
-lmi_out = [D > 0];
-lmi_out = [lmi_out, P_sum < [C;J]'*[-D, G; G' D]*[C;J]];
+lmi_out = [D >= 0];
+lmi_out = [lmi_out, P_sum <= [C;J]'*[-D, G; G' D]*[C;J]];
 
 end 
